@@ -1,0 +1,19 @@
+{
+  "name": "back-m1p10android-mirana-manoa",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MiranaIns/Back-m1p10android-Mirana-Manoa.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MiranaIns/Back-m1p10android-Mirana-Manoa/issues"
+  },
+  "homepage": "https://github.com/MiranaIns/Back-m1p10android-Mirana-Manoa#readme"
+}

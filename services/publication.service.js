@@ -10,7 +10,7 @@ const PublicationService = {
 };
 
 const db = Database.getInstance();
-const collectionName = 'publication';
+const collectionName = 'publications';
 
 async function findById(id) {
     try {
@@ -79,8 +79,8 @@ async function findAllWithFilters(filters, page, pageSize) {
 function buildQueryFromFilters(filters) {
     const query = {};
 
-    if (filters.search) {
-        query.description = { $regex: filters.search, $options: 'i' };
+    if (filters) {
+        query.description = { $regex: filters, $options: 'i' };
     }
     
     return query;

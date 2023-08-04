@@ -4,6 +4,6 @@ const PublicationController = require('../controllers/publication.controller');
 
 router.get('/:id', PublicationController.getPublicationById);
 router.post('/create', PublicationController.createPublication);
-router.get('/filter', PublicationController.getPublicationsWithFilters);
+router.get('/', PublicationController.getPublicationsWithFilters);
 
 module.exports = router;

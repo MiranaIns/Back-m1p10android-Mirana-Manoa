@@ -35,9 +35,8 @@ async function createPublication(req, res) {
 
 async function getPublicationsWithFilters(req, res) {
     try {
-        const { filters, page, pageSize } = req.query;
-        const parsedFilters = JSON.parse(filters);
-        const publicationsData = await PublicationService.findAllWithFilters(parsedFilters, parseInt(page), parseInt(pageSize));
+        const { search, page, pageSize } = req.query;
+        const publicationsData = await PublicationService.findAllWithFilters(search, parseInt(page), parseInt(pageSize));
         res.json(normalizeApiResponse({ status: httpStatus.OK, data: [publicationsData] })).status(httpStatus.OK);
     } catch (err) {
         res.json(normalizeApiResponse({ errors: err.message, status: httpStatus.INTERNAL_SERVER_ERROR })).status(httpStatus.OK);

@@ -4,25 +4,14 @@ const PublicationService = require('../services/publication.service');
 const ApiError = require('../errors/api.error');
 
 const PublicationController = {
-    getPublicationById,
     createPublication,
     getPublicationsWithFilters
-}
-
-async function getPublicationById(req, res) {
-    try {
-        const publicationId = req.params.id;
-        const publication = await PublicationService.findById(publicationId);
-        res.json(normalizeApiResponse({ status: httpStatus.OK, data: [publication] })).status(httpStatus.OK);
-    } catch (e) {
-        res.json(normalizeApiResponse({ errors: e.message, status: httpStatus.NOT_FOUND })).status(httpStatus.OK);
-    }
 }
 
 async function createPublication(req, res) {
     try {
         const publicationData = req.body;
-        const publicationId = await PublicationService.create(publicationData);
+        const publicationId = await PublicationService.create(req.utilisateur, publicationData);
         res.json(normalizeApiResponse({ status: httpStatus.CREATED, data: [publicationId] })).status(httpStatus.OK);
     } catch (err) {
         if (err instanceof ApiError) {
@@ -35,12 +24,14 @@ async function createPublication(req, res) {
 
 async function getPublicationsWithFilters(req, res) {
     try {
-        const { search, page, pageSize } = req.query;
-        const publicationsData = await PublicationService.findAllWithFilters(search, parseInt(page), parseInt(pageSize));
+        const { search, fk_categorie_id, fk_lieu_id, page, pageSize } = req.query;
+        const filters = { search, fk_categorie_id, fk_lieu_id };
+        const publicationsData = await PublicationService.findAllWithFilters(filters, parseInt(page), parseInt(pageSize));
         res.json(normalizeApiResponse({ status: httpStatus.OK, data: [publicationsData] })).status(httpStatus.OK);
     } catch (err) {
         res.json(normalizeApiResponse({ errors: err.message, status: httpStatus.INTERNAL_SERVER_ERROR })).status(httpStatus.OK);
     }
 }
+
 
 module.exports = PublicationController;

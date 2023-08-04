@@ -1,9 +1,9 @@
 const express = require('express');
+const authMiddleware = require("../middlewares/auth.middleware");
 const router = express.Router();
 const PublicationController = require('../controllers/publication.controller');
 
-router.get('/:id', PublicationController.getPublicationById);
-router.post('/create', PublicationController.createPublication);
-router.get('/', PublicationController.getPublicationsWithFilters);
+router.post('/', authMiddleware(), PublicationController.createPublication);
+router.get('/', authMiddleware(), PublicationController.getPublicationsWithFilters);
 
 module.exports = router;

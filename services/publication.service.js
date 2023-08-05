@@ -73,14 +73,12 @@ async function findAllWithFilters(filters, page, pageSize) {
                 const lieuDetails = await getLieuDetails(db, publication.fk_lieu_id);
                 const categorieDetails = await getCategorieDetails(db, publication.fk_categorie_id);
                 const userDetails = await getUserDetails(db, publication.fk_user_id);
-                const reactionsCount = await getReactionsCount(db, publication._id); // Nouvelle ligne
 
                 return {
                     ...publication,
                     lieuDetails,
                     categorieDetails,
-                    userDetails,
-                    reactionsCount // Nouvelle ligne
+                    userDetails
                 };
             }));
 
@@ -92,12 +90,6 @@ async function findAllWithFilters(filters, page, pageSize) {
     } catch (e) {
         throw { status: Constant.HTTP_INTERNAL_SERVER_ERROR, message: e.message };
     }
-}
-
-async function getReactionsCount(db, publicationId) {
-    const collection = db.collection('reactions');
-    const count = await collection.countDocuments({ fk_publication_id: publicationId });
-    return count;
 }
 
 async function getLieuDetails(db, lieuId) {

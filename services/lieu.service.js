@@ -3,7 +3,8 @@ const Constant = require("../utils/constant.util");
 const { ObjectId } = require("mongodb");
 
 const LieuService = {
-    listAllLieux
+    listAllLieux,
+    getLieuById
 };
 
 const db = Database.getInstance();
@@ -43,6 +44,18 @@ function buildQueryFromFilters(filters) {
     }
     
     return query;
+}
+
+async function getLieuById(lieuId) {
+    try {
+        return db.then(async (db) => {
+            const collection = db.collection('lieux');
+            const lieu = await collection.findOne({ _id: ObjectId(lieuId) });
+            return lieu;
+        });
+    } catch (e) {
+        throw { status: Constant.HTTP_INTERNAL_SERVER_ERROR, message: e.message };
+    }
 }
 
 module.exports = LieuService;

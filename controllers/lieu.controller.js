@@ -3,7 +3,8 @@ const httpStatus = require('http-status');
 const { normalizeApiResponse } = require('../utils/apiResponse.util');
 
 const LieuController = {
-    getAllLieux
+    getAllLieux,
+    getLieu
 }
 async function getAllLieux(req, res) {
     try {
@@ -13,6 +14,20 @@ async function getAllLieux(req, res) {
         res.json(normalizeApiResponse({ status: httpStatus.OK, data: [lieuxData] })).status(httpStatus.OK);
     } catch (err) {
         res.json(normalizeApiResponse({ errors: err.message, status: httpStatus.INTERNAL_SERVER_ERROR })).status(httpStatus.OK);
+    }
+}
+
+async function getLieu(req, res) {
+    try {
+        const { lieuId } = req.params;
+        const lieu = await LieuService.getLieuById(lieuId);
+        if (!lieu) {
+            res.json(normalizeApiResponse({ errors: "Lieu not found", status: httpStatus.NOT_FOUND })).status(httpStatus.NOT_FOUND);
+        } else {
+            res.json(normalizeApiResponse({ status: httpStatus.OK, data: [lieu] })).status(httpStatus.OK);
+        }
+    } catch (err) {
+        res.json(normalizeApiResponse({ errors: err.message, status: httpStatus.INTERNAL_SERVER_ERROR })).status(httpStatus.INTERNAL_SERVER_ERROR);
     }
 }
 

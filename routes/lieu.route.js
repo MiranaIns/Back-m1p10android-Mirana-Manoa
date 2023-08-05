@@ -4,5 +4,6 @@ const router = express.Router();
 const LieuController = require("../controllers/lieu.controller");
 
 router.get('/', authMiddleware(), LieuController.getAllLieux);
+router.get('/:lieuId', authMiddleware(), LieuController.getLieu);
 
 module.exports = router;

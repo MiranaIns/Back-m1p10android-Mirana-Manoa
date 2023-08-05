@@ -7,12 +7,14 @@ const notFoundMiddleware = require("./middlewares/notFound.middleware");
 const errorMiddleware = require("./middlewares/error.middleware");
 const passport = require('passport');
 const { jwtStrategy, jwtStrategyRat, jwtStrategyRfi } = require('./config/passport.config');
+const path = require('path');
 
 /* Middlewares */
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(cors());
 app.options('*',cors());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);

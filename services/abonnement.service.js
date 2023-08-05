@@ -13,7 +13,7 @@ const collectionName = 'abonnements';
 async function isUserSubscribed(user, fk_lieu_id) {
     try {
         return db.then(async (db) => {
-            const collection = db.collection('abonnements');
+            const collection = db.collection(collectionName);
             const existingSubscription = await collection.findOne({
                 "fk_utilisateur_id": user._id,
                 "fk_lieu_id": ObjectId(fk_lieu_id)
@@ -49,7 +49,7 @@ async function subscribeToLieu(user, fk_lieu_id) {
 async function unsubscribeFromLieu(user, fk_lieu_id) {
     try {
         return db.then(async (db) => {
-            const collection = db.collection('abonnements');
+            const collection = db.collection(collectionName);
             const deleteResult = await collection.deleteOne({
                 "fk_utilisateur_id": user._id,
                 "fk_lieu_id": ObjectId(fk_lieu_id)

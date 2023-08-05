@@ -48,7 +48,7 @@ async function createReaction(user, fk_publication_id) {
 async function deleteReaction(user, fk_publication_id) {
     try {
         return db.then(async (db) => {
-            const collection = db.collection('reactions');
+            const collection = db.collection(collectionName);
             const deleteResult = await collection.deleteOne({
                 "fk_utilisateur_id": user._id,
                 "fk_publication_id": ObjectId(fk_publication_id)

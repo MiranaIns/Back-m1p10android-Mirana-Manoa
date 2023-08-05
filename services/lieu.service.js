@@ -25,15 +25,52 @@ async function listAllLieux(filters, page, pageSize) {
                 .limit(pageSize)
                 .toArray();
 
+            const lieuxWithAdditionalInfo = await Promise.all(
+                lieux.map(async (lieu) => {
+                    const abonnes = await getAbonnesCount(db, lieu._id);
+                    const note_moyenne = await getNoteMoyenne(db, lieu._id);
+                    return {
+                        ...lieu,
+                        abonnes,
+                        note_moyenne
+                    };
+                })
+            );
+
             return {
                 totalLieux,
-                lieux
+                lieux: lieuxWithAdditionalInfo
             };
         });
     } catch (e) {
         throw { status: Constant.HTTP_INTERNAL_SERVER_ERROR, message: e.message };
     }
 }
+
+async function getAbonnesCount(db, fk_lieu_id) {
+    try {
+        const collection = db.collection('abonnements');
+        const count = await collection.countDocuments({ fk_lieu_id });
+        return count;
+    } catch (e) {
+        throw { status: Constant.HTTP_INTERNAL_SERVER_ERROR, message: e.message };
+    }
+}
+
+async function getNoteMoyenne(db, fk_lieu_id) {
+    try {
+        const collection = db.collection('notes');
+        const notes = await collection.find({ fk_lieu_id }).toArray();
+        if (notes.length === 0) {
+            return 0;
+        }
+        const totalNotes = notes.reduce((sum, note) => sum + note.note, 0);
+        return totalNotes / notes.length;
+    } catch (e) {
+        throw { status: Constant.HTTP_INTERNAL_SERVER_ERROR, message: e.message };
+    }
+}
+
 
 function buildQueryFromFilters(filters) {
     const query = {};
@@ -49,9 +86,21 @@ function buildQueryFromFilters(filters) {
 async function getLieuById(lieuId) {
     try {
         return db.then(async (db) => {
-            const collection = db.collection('lieux');
+            const collection = db.collection(collectionName);
             const lieu = await collection.findOne({ _id: ObjectId(lieuId) });
-            return lieu;
+
+            if (!lieu) {
+                return null; // Le lieu n'a pas été trouvé
+            }
+
+            const abonnes = await getAbonnesCount(db, lieuId);
+            const note_moyenne = await getNoteMoyenne(db, lieuId);
+
+            return {
+                ...lieu,
+                abonnes,
+                note_moyenne
+            };
         });
     } catch (e) {
         throw { status: Constant.HTTP_INTERNAL_SERVER_ERROR, message: e.message };

@@ -4,6 +4,7 @@ const LieuRouter = require('../routes/lieu.route');
 const CategorieRouter = require('../routes/categorie.route');
 const ReactionRouter = require('../routes/reaction.route');
 const AbonnementRouter = require('../routes/abonnement.route');
+const NoteRouter = require('../routes/note.route');
 const configureRouter = (app) => {
     app.use('/authentification', AuthentificationRouter);
     app.use('/publications', PublicationRouter);
@@ -11,6 +12,7 @@ const configureRouter = (app) => {
     app.use('/categories', CategorieRouter);
     app.use('/reactions', ReactionRouter);
     app.use('/lieux', AbonnementRouter);
+    app.use('/lieux', NoteRouter);
 }
 
 module.exports = configureRouter

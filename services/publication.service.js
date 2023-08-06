@@ -53,7 +53,7 @@ async function checkDocumentExists(db, collectionName, documentId) {
 }
 
 
-async function findAllWithFilters(filters, page, pageSize) {
+async function findAllWithFilters(filters, page, pageSize, user) {
     try {
         return db.then(async (db) => {
             const collection = db.collection(collectionName);
@@ -61,26 +61,39 @@ async function findAllWithFilters(filters, page, pageSize) {
             const query = buildQueryFromFilters(filters);
 
             const skip = (page - 1) * pageSize;
-            const totalPublications = await collection.countDocuments(query);
-            const publications = await collection
-                .find(query)
+
+            // Prioritize publications where the user is subscribed
+            const subscribedPublications = await collection
+                .find({ ...query, fk_lieu_id: { $in: await getSubscribedLieuIds(db, user._id) } })
                 .sort({ date_publication: -1 })
                 .skip(skip)
                 .limit(pageSize)
                 .toArray();
 
-            const publicationsWithDetails = await Promise.all(publications.map(async (publication) => {
+            // Publications where the user is not subscribed
+            const remainingPublications = await collection
+                .find({ ...query, fk_lieu_id: { $nin: await getSubscribedLieuIds(db, user._id) } })
+                .sort({ date_publication: -1 })
+                .skip(skip)
+                .limit(pageSize - subscribedPublications.length)
+                .toArray();
+
+            const totalPublications = await collection.countDocuments(query);
+            const publicationsWithDetails = await Promise.all([
+                ...subscribedPublications,
+                ...remainingPublications
+            ].map(async (publication) => {
                 const lieuDetails = await getLieuDetails(db, publication.fk_lieu_id);
                 const categorieDetails = await getCategorieDetails(db, publication.fk_categorie_id);
                 const userDetails = await getUserDetails(db, publication.fk_user_id);
-                const reactionsCount = await getReactionsCount(db, publication._id); // Nouvelle ligne
+                const reactionsCount = await getReactionsCount(db, publication._id);
 
                 return {
                     ...publication,
                     lieuDetails,
                     categorieDetails,
                     userDetails,
-                    reactionsCount // Nouvelle ligne
+                    reactionsCount
                 };
             }));
 
@@ -92,6 +105,12 @@ async function findAllWithFilters(filters, page, pageSize) {
     } catch (e) {
         throw { status: Constant.HTTP_INTERNAL_SERVER_ERROR, message: e.message };
     }
+}
+
+async function getSubscribedLieuIds(db, user) {
+    const abonnementsCollection = db.collection('abonnements');
+    const abonnements = await abonnementsCollection.find({ fk_utilisateur_id: user._id }).toArray();
+    return abonnements.map(abonnement => abonnement.fk_lieu_id);
 }
 
 async function getReactionsCount(db, publicationId) {

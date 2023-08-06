@@ -11,6 +11,9 @@ const PublicationController = {
 async function createPublication(req, res) {
     try {
         const publicationData = req.body;
+        if(req.file){
+            publicationData.publication_image = req.file.path;
+        }
         const publicationId = await PublicationService.create(req.utilisateur, publicationData);
         res.json(normalizeApiResponse({ status: httpStatus.CREATED, data: [publicationId] })).status(httpStatus.OK);
     } catch (err) {

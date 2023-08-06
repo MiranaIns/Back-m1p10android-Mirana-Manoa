@@ -27,7 +27,7 @@ async function getPublicationsWithFilters(req, res) {
         const { search, fk_categorie_id, fk_lieu_id, page, pageSize } = req.query;
         const filters = { search, fk_categorie_id, fk_lieu_id };
         const publicationsData = await PublicationService.findAllWithFilters(filters, parseInt(page), parseInt(pageSize));
-        res.json(normalizeApiResponse({ status: httpStatus.OK, data: [publicationsData] })).status(httpStatus.OK);
+        res.json(normalizeApiResponse({ status: httpStatus.OK, data: publicationsData})).status(httpStatus.OK);
     } catch (err) {
         res.json(normalizeApiResponse({ errors: err.message, status: httpStatus.INTERNAL_SERVER_ERROR })).status(httpStatus.OK);
     }

@@ -11,9 +11,6 @@ const PublicationController = {
 async function createPublication(req, res) {
     try {
         const publicationData = req.body;
-        if(req.file){
-            publicationData.publication_image = req.file.path;
-        }
         const publicationId = await PublicationService.create(req.utilisateur, publicationData);
         res.json(normalizeApiResponse({ status: httpStatus.CREATED, data: [publicationId] })).status(httpStatus.OK);
     } catch (err) {
@@ -29,7 +26,7 @@ async function getPublicationsWithFilters(req, res) {
     try {
         const { search, fk_categorie_id, fk_lieu_id, page, pageSize } = req.query;
         const filters = { search, fk_categorie_id, fk_lieu_id };
-        const publicationsData = await PublicationService.findAllWithFilters(filters, parseInt(page), parseInt(pageSize));
+        const publicationsData = await PublicationService.findAllWithFilters(filters, parseInt(page), parseInt(pageSize), req.utilisateur);
         res.json(normalizeApiResponse({ status: httpStatus.OK, data: publicationsData})).status(httpStatus.OK);
     } catch (err) {
         res.json(normalizeApiResponse({ errors: err.message, status: httpStatus.INTERNAL_SERVER_ERROR })).status(httpStatus.OK);

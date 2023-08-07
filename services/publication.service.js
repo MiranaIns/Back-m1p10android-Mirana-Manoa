@@ -2,6 +2,7 @@ const Database = require('../database');
 const Constant = require("../utils/constant.util");
 const { ObjectId } = require("mongodb");
 const { v4 } = require("uuid");
+const LieuService = require('./lieu.service');
 
 const PublicationService = {
     create,
@@ -119,6 +120,8 @@ async function getReactionsCount(db, publicationId) {
 async function getLieuDetails(db, lieuId) {
     const lieuCollection = db.collection('lieux');
     const lieuDetails = await lieuCollection.findOne({ _id: ObjectId(lieuId) });
+    lieuDetails.abonnes = await LieuService.getAbonnesCount(db, ObjectId(lieuId));
+    lieuDetails.note_moyenne = await LieuService.getNoteMoyenne(db, ObjectId(lieuId));
     return lieuDetails;
 }
 

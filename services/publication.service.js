@@ -61,39 +61,30 @@ async function findAllWithFilters(filters, page, pageSize, user) {
             const query = buildQueryFromFilters(filters);
 
             const skip = (page - 1) * pageSize;
-
-            // Prioritize publications where the user is subscribed
-            const subscribedPublications = await collection
-                .find({ ...query, fk_lieu_id: { $in: await getSubscribedLieuIds(db, user._id) } })
+            const totalPublications = await collection.countDocuments(query);
+            const publications = await collection
+                .find(query)
                 .sort({ date_publication: -1 })
                 .skip(skip)
                 .limit(pageSize)
                 .toArray();
 
-            // Publications where the user is not subscribed
-            const remainingPublications = await collection
-                .find({ ...query, fk_lieu_id: { $nin: await getSubscribedLieuIds(db, user._id) } })
-                .sort({ date_publication: -1 })
-                .skip(skip)
-                .limit(pageSize - subscribedPublications.length)
-                .toArray();
-
-            const totalPublications = await collection.countDocuments(query);
-            const publicationsWithDetails = await Promise.all([
-                ...subscribedPublications,
-                ...remainingPublications
-            ].map(async (publication) => {
+            const publicationsWithDetails = await Promise.all(publications.map(async (publication) => {
                 const lieuDetails = await getLieuDetails(db, publication.fk_lieu_id);
                 const categorieDetails = await getCategorieDetails(db, publication.fk_categorie_id);
                 const userDetails = await getUserDetails(db, publication.fk_user_id);
                 const reactionsCount = await getReactionsCount(db, publication._id);
+                const isAbonne = await isUserAbonne(db, user._id, publication.fk_lieu_id);
+                const hasReacted = await hasUserReacted(db, user._id, publication._id);
 
                 return {
                     ...publication,
                     lieuDetails,
                     categorieDetails,
                     userDetails,
-                    reactionsCount
+                    reactionsCount,
+                    isAbonne,
+                    hasReacted
                 };
             }));
 
@@ -107,10 +98,16 @@ async function findAllWithFilters(filters, page, pageSize, user) {
     }
 }
 
-async function getSubscribedLieuIds(db, user) {
+async function isUserAbonne(db, utilisateurId, lieuId) {
     const abonnementsCollection = db.collection('abonnements');
-    const abonnements = await abonnementsCollection.find({ fk_utilisateur_id: user._id }).toArray();
-    return abonnements.map(abonnement => abonnement.fk_lieu_id);
+    const abonnement = await abonnementsCollection.findOne({ fk_utilisateur_id: utilisateurId, fk_lieu_id: lieuId });
+    return !!abonnement;
+}
+
+async function hasUserReacted(db, utilisateurId, publicationId) {
+    const reactionsCollection = db.collection('reactions');
+    const reaction = await reactionsCollection.findOne({ fk_utilisateur_id: utilisateurId, fk_publication_id: publicationId });
+    return !!reaction;
 }
 
 async function getReactionsCount(db, publicationId) {
@@ -154,6 +151,5 @@ function buildQueryFromFilters(filters) {
 
     return query;
 }
-
 
 module.exports = PublicationService;

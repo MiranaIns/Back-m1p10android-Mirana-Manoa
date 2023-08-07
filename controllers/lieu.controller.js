@@ -10,7 +10,7 @@ async function getAllLieux(req, res) {
     try {
         const { lieu_nom, page, pageSize } = req.query;
         const filters = { lieu_nom };
-        const lieuxData = await LieuService.listAllLieux(filters, parseInt(page), parseInt(pageSize));
+        const lieuxData = await LieuService.listAllLieux(filters, parseInt(page), parseInt(pageSize), req.utilisateur);
         res.json(normalizeApiResponse({ status: httpStatus.OK, data: lieuxData })).status(httpStatus.OK);
     } catch (err) {
         res.json(normalizeApiResponse({ errors: err.message, status: httpStatus.INTERNAL_SERVER_ERROR })).status(httpStatus.OK);
@@ -20,7 +20,7 @@ async function getAllLieux(req, res) {
 async function getLieu(req, res) {
     try {
         const { lieuId } = req.params;
-        const lieu = await LieuService.getLieuById(lieuId);
+        const lieu = await LieuService.getLieuById(lieuId, req.utilisateur);
         if (!lieu) {
             res.json(normalizeApiResponse({ errors: "Lieu not found", status: httpStatus.NOT_FOUND })).status(httpStatus.NOT_FOUND);
         } else {

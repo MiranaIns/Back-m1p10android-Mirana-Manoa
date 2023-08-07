@@ -10,7 +10,7 @@ const LieuService = {
 const db = Database.getInstance();
 const collectionName = 'lieux';
 
-async function listAllLieux(filters, page, pageSize) {
+async function listAllLieux(filters, page, pageSize, user) {
     try {
         const query = buildQueryFromFilters(filters);
 
@@ -29,10 +29,12 @@ async function listAllLieux(filters, page, pageSize) {
                 lieux.map(async (lieu) => {
                     const abonnes = await getAbonnesCount(db, lieu._id);
                     const note_moyenne = await getNoteMoyenne(db, lieu._id);
+                    const isAbonne = await isUserAbonne(db, user, lieu._id);
                     return {
                         ...lieu,
                         abonnes,
-                        note_moyenne
+                        note_moyenne,
+                        isAbonne
                     };
                 })
             );
@@ -46,6 +48,15 @@ async function listAllLieux(filters, page, pageSize) {
         throw { status: Constant.HTTP_INTERNAL_SERVER_ERROR, message: e.message };
     }
 }
+
+async function isUserAbonne(db, user, lieuId) {
+    const abonnementsCollection = db.collection('abonnements');
+    const abonnement = await abonnementsCollection.findOne({ fk_utilisateur_id: user._id, fk_lieu_id: lieuId });
+    return !!abonnement;
+}
+
+// ... Rest of the functions ...
+
 
 async function getAbonnesCount(db, fk_lieu_id) {
     try {
@@ -83,7 +94,7 @@ function buildQueryFromFilters(filters) {
     return query;
 }
 
-async function getLieuById(lieuId) {
+async function getLieuById(lieuId, user) {
     try {
         return db.then(async (db) => {
             const collection = db.collection(collectionName);
@@ -93,13 +104,15 @@ async function getLieuById(lieuId) {
                 return null; // Le lieu n'a pas été trouvé
             }
 
-            const abonnes = await getAbonnesCount(db, lieuId);
-            const note_moyenne = await getNoteMoyenne(db, lieuId);
+            const abonnes = await getAbonnesCount(db, lieu._id);
+            const note_moyenne = await getNoteMoyenne(db, lieu._id);
+            const isAbonne = await isUserAbonne(db, user, lieu._id);
 
             return {
                 ...lieu,
                 abonnes,
-                note_moyenne
+                note_moyenne,
+                isAbonne
             };
         });
     } catch (e) {

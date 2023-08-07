@@ -4,7 +4,9 @@ const { ObjectId } = require("mongodb");
 
 const LieuService = {
     listAllLieux,
-    getLieuById
+    getLieuById,
+    getAbonnesCount,
+    getNoteMoyenne
 };
 
 const db = Database.getInstance();
@@ -54,9 +56,6 @@ async function isUserAbonne(db, user, lieuId) {
     const abonnement = await abonnementsCollection.findOne({ fk_utilisateur_id: user._id, fk_lieu_id: lieuId });
     return !!abonnement;
 }
-
-// ... Rest of the functions ...
-
 
 async function getAbonnesCount(db, fk_lieu_id) {
     try {
